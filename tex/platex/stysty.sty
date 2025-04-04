@@ -31,8 +31,7 @@
 \tcbuselibrary{breakable, skins, theorems}
 \theoremstyle{definition}
 
-\crefname{dfn}{Def.}{Defs.}
-\newtcbtheorem{dfn}{Def.}{
+\newtcbtheorem[crefname={Def.}{Defs.}]{dfn}{Def.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -44,8 +43,7 @@
     top=4mm
 }{def}
 
-\crefname{thm}{Thm.}{Thms.}
-\newtcbtheorem{thm}{Thm.}{
+\newtcbtheorem[crefname={Thm.}{Thms.}]{thm}{Thm.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -57,8 +55,7 @@
     top=4mm
 }{prop}
 
-\crefname{lem}{Lem.}{Lems.}
-\newtcbtheorem{lem}{Lem.}{
+\newtcbtheorem[crefname={Lem.}{Lems.}]{lem}{Lem.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -70,8 +67,7 @@
     top=4mm
 }{prop}
 
-\crefname{cor}{Cor.}{Cors.}
-\newtcbtheorem{cor}{Cor.}{
+\newtcbtheorem[crefname={Cor.}{Cors.}]{cor}{Cor.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -83,8 +79,7 @@
     top=4mm
 }{prop}
 
-\crefname{prop}{Prop.}{Props.}
-\newtcbtheorem{prop}{Prop.}{
+\NewTcbTheorem[crefname={Prop.}{Props.}]{prop}{Prop.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -95,8 +90,8 @@
     fonttitle=\bfseries,
     top=4mm
 }{prop}
+% \crefname{prop}{Prop.}{Props.}
 
-\crefname{prf}{Prf.}{Prfs.}
 \newenvironment{prf}[1]{\begin{tcolorbox}[
     enhanced,
     breakable,
@@ -110,7 +105,6 @@
     title={\textbf{Prf. {#1}}},
 ]}{\end{tcolorbox}}
 
-\crefname{rem}{Rem.}{Rems.}
 \newenvironment{remark}{\begin{tcolorbox}[
     enhanced,
     breakable,
@@ -134,14 +128,15 @@
     colframe=green!50!black,
     fonttitle=\bfseries,
     top=4mm,
-    title={\textbf{E.g. {#1}}}
+    title={\textbf{Example {#1}}}
 ]}{\end{tcolorbox}}
-
+\crefname{eg}{Exmaple}{Examples}
 
 
 % font color
 \newcommand{\red}[1]{\textcolor{red}{#1}}
 \newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\purple}[1]{\textcolor{purple}{#1}}
 
 
 
