@@ -5,7 +5,7 @@
 \usepackage{booktabs}
 \usepackage{color}
 \usepackage{docmute}
-\usepackage{graphicx}
+\usepackage[dvipdfmx]{graphicx}
 \usepackage{mathrsfs}
 \usepackage{physics}
 \usepackage{subcaption}
@@ -20,7 +20,20 @@
 \usepackage{cleveref}
 \usepackage{autonum}
 
-\usetikzlibrary{arrows.meta, calc, intersections}
+\usetikzlibrary{
+    intersections,
+    decorations,
+    calc,
+    patterns,
+    through,
+    positioning,
+    arrows,
+    shapes,
+    backgrounds,
+    cd,
+    spath3,
+    knots
+}
 
 % equation numbering
 \numberwithin{equation}{section}
@@ -147,6 +160,8 @@
 \newcommand{\bbZ}{\mathbb{Z}}
 \newcommand{\bbR}{\mathbb{R}}
 \newcommand{\bbC}{\mathbb{C}}
+
+\newcommand{\Ob}{\mathrm{Ob}}
 
 % math operators
 \newcommand{\downin}{\rotatebox{90}{$\in$}}
