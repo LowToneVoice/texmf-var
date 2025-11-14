@@ -25,6 +25,28 @@
             }
         }
     },
+    -<-/.style={
+        postaction={
+            decorate,
+            decoration={
+                markings,
+                mark=at position 0.5 with {\arrow{<}}
+            }
+        }
+    },
+    -<- label/.style n args={2}{
+        -<-,
+        postaction={
+            decorate,
+            decoration={
+                markings,
+                mark=at position 0.5 with {
+                    \arrow{<};
+                    \node[#1] at (0,0) {#2};
+                }
+            }
+        }
+    },
     bullet/.style={
         circle, fill,
         inner sep=2pt,
