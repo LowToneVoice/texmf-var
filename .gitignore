@@ -2,3 +2,10 @@ texdoc
 luatex-cache
 fonts
 tfm
+ls-R
+*.dat
+*.lua
+*.def
+*.log
+*.fmt
+*.base
