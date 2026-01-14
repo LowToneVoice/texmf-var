@@ -41,6 +41,7 @@
 
 \crefname{figure}{Fig.}{Figs.}
 \crefname{table}{Tbl.}{Tbls.}
+\crefname{chapter}{Chap.}{Chaps.}
 \crefname{section}{Sec.}{Secs.}
 \crefname{subsection}{Sec.}{Secs.}
 \crefname{subsubsection}{Sec.}{Secs.}
@@ -49,7 +50,9 @@
 \tcbuselibrary{breakable, skins, theorems}
 \theoremstyle{definition}
 
-\newtcbtheorem[crefname={Def.}{Defs.}]{dfn}{Def.}{
+\newtcbtheorem[
+    crefname={Def.}{Defs.}
+]{dfn}{Def.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -61,7 +64,9 @@
     top=4mm
 }{def}
 
-\newtcbtheorem[crefname={Thm.}{Thms.}]{thm}{Thm.}{
+\newtcbtheorem[
+    crefname={Prop.}{Props.}
+]{prop}{Prop.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -73,7 +78,10 @@
     top=4mm
 }{prop}
 
-\newtcbtheorem[crefname={Lem.}{Lems.}]{lem}{Lem.}{
+\newtcbtheorem[
+    use counter from=prop,
+    crefname={Thm.}{Thms.}
+]{thm}{Thm.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -85,7 +93,10 @@
     top=4mm
 }{prop}
 
-\newtcbtheorem[crefname={Cor.}{Cors.}]{cor}{Cor.}{
+\newtcbtheorem[
+    use counter from=prop,
+    crefname={Lem.}{Lems.}
+]{lem}{Lem.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -97,7 +108,10 @@
     top=4mm
 }{prop}
 
-\newtcbtheorem[crefname={Prop.}{Props.}]{prop}{Prop.}{
+\newtcbtheorem[
+    use counter from=prop,
+    crefname={Cor.}{Cors.}
+]{cor}{Cor.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -110,7 +124,10 @@
 }{prop}
 % \crefname{prop}{Prop.}{Props.}
 
-\newtcbtheorem[crefname={Problem}{Problems}]{prob}{Problem}{
+\newtcbtheorem[
+    use counter from=prop,
+    crefname={Problem}{Problems}
+]{prob}{Problem}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
@@ -122,7 +139,10 @@
     top=4mm
 }{prob}
 
-\newtcbtheorem[crefname={Assump.}{Assumps.}]{assump}{Assumps.}{
+\newtcbtheorem[
+    use counter from=prop,
+    crefname={Assump.}{Assumps.}
+]{assump}{Assumps.}{
     enhanced,
     breakable,
     attach boxed title to top left={xshift=5mm, yshift=-3mm},
