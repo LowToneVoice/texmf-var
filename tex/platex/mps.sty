@@ -1,0 +1,691 @@
+\makeatletter
+
+% 1. パラメータを受け取るためのキーを定義
+% デフォルト値は 0.75cm としています
+\pgfkeys{/tikz/fusion L/.initial=0.75cm}
+
+% MPO and MPS
+
+\pgfdeclareshape{mpo}{
+    % --- 寸法定義 ---
+    \saveddimen{\radius}{\pgfmathsetlength\pgf@x{0.125cm}} % 円の半径
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % 足の長さ
+
+    % --- アンカー定義 ---
+    \anchor{center}{\pgfpointorigin}
+
+    % 出力 (円の右端 + 足の長さ)
+    \anchor{out}{
+        \pgfpoint{\radius + \leadelen}{0pt}
+    }
+
+    % 入力 (円の左側計算 + 足の長さ)
+    % x座標の計算: x = -sqrt(r^2 - y^2) - leadlen
+    \anchor{east}{
+        \pgfpoint{\radius + \leadelen}{0}
+    }
+    \anchor{west}{
+        \pgfpoint{-\radius - \leadelen}{0}
+    }
+    \anchor{north}{
+        \pgfpoint{0}{\radius + \leadelen}
+    }
+    \anchor{south}{
+        \pgfpoint{0}{-\radius - \leadelen}
+    }
+    \anchor{below left}{
+        \pgfpoint{-\radius / sqrt(2)}{-\radius / sqrt(2)}
+    }
+
+    % --- 描画パス ---
+    \backgroundpath{
+        % 1. 黒い円 (塗りつぶし)
+        \pgfsetfillcolor{black}
+        \pgfpathcircle{\pgfpointorigin}{\radius}
+        \pgfusepath{fill}
+
+        % 2. 足の描画 (白線/黒線)
+        % ここでは背景が白と仮定して黒線で描画しますが、
+        % もし「黒い円の中に食い込む白線」が必要なら strokecolor{white} に変更してください。
+        % 今回は「円の外に伸びる黒い足」として実装します。
+
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+
+
+        % --- 入力足 (左右) ---
+        \pgfpathmoveto{\pgfpoint{-\radius - \leadelen}{0cm}}
+        \pgfpathlineto{\pgfpoint{\radius + \leadelen}{0cm}}
+        \pgfusepath{stroke}
+        % --- 入力足 (上下) ---
+        \pgfpathmoveto{\pgfpoint{0cm}{-\radius - \leadelen}}
+        \pgfpathlineto{\pgfpoint{0cm}{\radius + \leadelen}}
+        \pgfusepath{stroke}
+    }
+}
+
+\pgfdeclareshape{mps}{
+    % --- 寸法定義 ---
+    \saveddimen{\radius}{\pgfmathsetlength\pgf@x{0.125cm}} % 円の半径
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % 足の長さ
+
+    % --- アンカー定義 ---
+    \anchor{center}{\pgfpointorigin}
+
+    % 出力 (円の右端 + 足の長さ)
+    \anchor{out}{
+        \pgfpoint{\radius + \leadelen}{0pt}
+    }
+
+    % 入力 (円の左側計算 + 足の長さ)
+    % x座標の計算: x = -sqrt(r^2 - y^2) - leadlen
+    \anchor{east}{
+        \pgfpoint{\radius + \leadelen}{0}
+    }
+    \anchor{west}{
+        \pgfpoint{-\radius - \leadelen}{0}
+    }
+    \anchor{north}{
+        \pgfpoint{0}{\radius + \leadelen}
+    }
+    \anchor{south}{
+        \pgfpoint{0}{-\radius}
+    }
+
+    % --- 描画パス ---
+    \backgroundpath{
+        % 2. 足の描画 (白線/黒線)
+        % ここでは背景が白と仮定して黒線で描画しますが、
+        % もし「黒い円の中に食い込む白線」が必要なら strokecolor{white} に変更してください。
+        % 今回は「円の外に伸びる黒い足」として実装します。
+        \pgfsetstrokecolor{red}
+        \pgfsetlinewidth{0.5pt}
+
+
+        % --- 入力足 (左右) ---
+        \pgfpathmoveto{\pgfpoint{-\radius - \leadelen}{0cm}}
+        \pgfpathlineto{\pgfpoint{\radius + \leadelen}{0cm}}
+        \pgfusepath{stroke}
+
+        % --- 入力足 (上下) ---
+        \pgfsetstrokecolor{black}
+        \pgfpathmoveto{\pgfpoint{0cm}{0cm}}
+        \pgfpathlineto{\pgfpoint{0cm}{\radius + \leadelen}}
+        \pgfusepath{stroke}
+
+        % 1. 黒い円 (塗りつぶし)
+        \pgfsetfillcolor{red}
+        \pgfpathcircle{\pgfpointorigin}{\radius}
+        \pgfusepath{fill}
+    }
+}
+
+
+% right fusion
+\pgfdeclareshape{fusionR}{
+    % --- 変数の保存 ---
+    % ここで /tikz/fusion L の値を読み込み、シェイプ内部で使える長さに変換します
+    % \halfheight という名前で長さを保存します
+    \saveddimen{\halfheight}{
+        \pgfkeysgetvalue{/tikz/fusion L}{\len} % キーの値を取得
+        \pgfmathsetlength{\pgf@x}{\len}        % 長さに変換してpgf@xに入れる
+    }
+
+    % --- アンカー定義 ---
+    \anchor{center}{\pgfpointorigin}
+
+    % North (0, L)
+    \anchor{north}{\pgfpoint{0pt}{\halfheight}}
+
+    % South (0, -L)
+    \anchor{south}{\pgfpoint{0pt}{-\halfheight}}
+
+    \anchor{west}{\pgfpoint{--.5cm}{0}}
+
+    % bin_up (in_upの内部側)
+    % ユーザの要望: 位置を 2L - 0.2cm とする
+    % (中心座標系では y = L - 0.2cm となります)
+    \anchor{bin up}{
+        \pgfpoint{0.2cm}{\halfheight - 0.2cm}
+    }
+
+    % bin_down (対称の位置) y = - (L - 0.2cm)
+    \anchor{bin down}{
+        \pgfpoint{0.2cm}{-\halfheight + 0.2cm}
+    }
+
+    % in_up (外部接続点)
+    % bin_up と同じ高さで、少し左(-0.5cm)に配置
+    \anchor{in up}{
+        \pgfpoint{0.5cm}{\halfheight - 0.2cm}
+    }
+
+    \anchor{in down}{
+        \pgfpoint{0.5cm}{-\halfheight + 0.2cm}
+    }
+
+    \anchor{out}{\pgfpoint{-0.5cm}{0cm}}
+
+    % --- 描画 ---
+    \backgroundpath{
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{-0.5cm}{0.0cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{0.0cm}}
+        \pgfusepath{stroke}
+
+        % 白線 (in_up -> bin_up)
+        % ※前回同様、視認性のため少し内側(0.0)まで伸ばしています
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{0.5cm}{\halfheight - 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{\halfheight - 0.2cm}}
+        \pgfusepath{stroke}
+
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{0.5cm}{-\halfheight + 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{-\halfheight + 0.2cm}}
+        \pgfusepath{stroke}
+
+        % \halfheight 変数を使って長方形を描く
+        % 左下: (-0.1, -L), 右上: (0.1, L)
+        \pgfsetfillcolor{black}
+        \pgfpathrectanglecorners
+            {\pgfpoint{-0.1cm}{-\halfheight}}
+            {\pgfpoint{0.1cm}{\halfheight}}
+        \pgfusepath{fill}
+    }
+}
+
+% left fusion
+\pgfdeclareshape{fusionL}{
+    % --- 変数の保存 ---
+    % ここで /tikz/fusion L の値を読み込み、シェイプ内部で使える長さに変換します
+    % \halfheight という名前で長さを保存します
+    \saveddimen{\halfheight}{
+        \pgfkeysgetvalue{/tikz/fusion L}{\len} % キーの値を取得
+        \pgfmathsetlength{\pgf@x}{\len}        % 長さに変換してpgf@xに入れる
+    }
+
+    % --- アンカー定義 ---
+    \anchor{center}{\pgfpointorigin}
+
+    % North (0, L)
+    \anchor{north}{\pgfpoint{0pt}{\halfheight}}
+
+    % South (0, -L)
+    \anchor{south}{\pgfpoint{0pt}{-\halfheight}}
+
+    % bin_up (in_upの内部側)
+    % ユーザの要望: 位置を 2L - 0.2cm とする
+    % (中心座標系では y = L - 0.2cm となります)
+    \anchor{bin up}{
+        \pgfpoint{-0.2cm}{\halfheight - 0.2cm}
+    }
+
+    % bin_down (対称の位置) y = - (L - 0.2cm)
+    \anchor{bin down}{
+        \pgfpoint{-0.2cm}{-\halfheight + 0.2cm}
+    }
+
+    % in_up (外部接続点)
+    % bin_up と同じ高さで、少し左(-0.5cm)に配置
+    \anchor{in up}{
+        \pgfpoint{-0.5cm}{\halfheight - 0.2cm}
+    }
+
+    \anchor{in down}{
+        \pgfpoint{-0.5cm}{-\halfheight + 0.2cm}
+    }
+
+    \anchor{out}{\pgfpoint{0.5cm}{0cm}}
+    \anchor{west_label}{\pgfpoint{-1.2cm}{0cm}}
+
+    % --- 描画 ---
+    \backgroundpath{
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{0.5cm}{0.0cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{0.0cm}}
+        \pgfusepath{stroke}
+
+        % 白線 (in_up -> bin_up)
+        % ※前回同様、視認性のため少し内側(0.0)まで伸ばしています
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{-0.5cm}{\halfheight - 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{\halfheight - 0.2cm}}
+        \pgfusepath{stroke}
+
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{-0.5cm}{-\halfheight + 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{-\halfheight + 0.2cm}}
+        \pgfusepath{stroke}
+
+        % \halfheight 変数を使って長方形を描く
+        % 左下: (-0.1, -L), 右上: (0.1, L)
+        \pgfsetfillcolor{black}
+        \pgfpathrectanglecorners
+            {\pgfpoint{-0.1cm}{-\halfheight}}
+            {\pgfpoint{0.1cm}{\halfheight}}
+        \pgfusepath{fill}
+    }
+}
+
+
+% right action
+\pgfdeclareshape{actionR}{
+    % --- 変数の保存 ---
+    % ここで /tikz/fusion L の値を読み込み、シェイプ内部で使える長さに変換します
+    % \halfheight という名前で長さを保存します
+    \saveddimen{\halfheight}{
+        \pgfkeysgetvalue{/tikz/fusion L}{\len} % キーの値を取得
+        \pgfmathsetlength{\pgf@x}{\len}        % 長さに変換してpgf@xに入れる
+    }
+
+    % --- アンカー定義 ---
+    \anchor{center}{\pgfpointorigin}
+
+    % North (0, L)
+    \anchor{north}{\pgfpoint{0pt}{\halfheight}}
+
+    % South (0, -L)
+    \anchor{south}{\pgfpoint{0pt}{-\halfheight}}
+
+    % bin_up (in_upの内部側)
+    % ユーザの要望: 位置を 2L - 0.2cm とする
+    % (中心座標系では y = L - 0.2cm となります)
+    \anchor{bin up}{
+        \pgfpoint{0.2cm}{\halfheight - 0.2cm}
+    }
+
+    % bin_down (対称の位置) y = - (L - 0.2cm)
+    \anchor{bin down}{
+        \pgfpoint{0.2cm}{-\halfheight + 0.2cm}
+    }
+
+    % in_up (外部接続点)
+    % bin_up と同じ高さで、少し左(-0.5cm)に配置
+    \anchor{in up}{
+        \pgfpoint{0.5cm}{\halfheight - 0.2cm}
+    }
+
+    \anchor{in down}{
+        \pgfpoint{0.5cm}{-\halfheight + 0.2cm}
+    }
+
+    \anchor{out}{\pgfpoint{-0.5cm}{0cm}}
+
+    % --- 描画 ---
+    \backgroundpath{
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{red}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{-0.5cm}{0.0cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{0.0cm}}
+        \pgfusepath{stroke}
+
+        % 白線 (in_up -> bin_up)
+        % ※前回同様、視認性のため少し内側(0.0)まで伸ばしています
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{0.5cm}{\halfheight - 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{\halfheight - 0.2cm}}
+        \pgfusepath{stroke}
+
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{red}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{0.5cm}{-\halfheight + 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{-\halfheight + 0.2cm}}
+        \pgfusepath{stroke}
+
+        % \halfheight 変数を使って長方形を描く
+        % 左下: (-0.1, -L), 右上: (0.1, L)
+        \pgfsetfillcolor{red}
+        \pgfpathrectanglecorners
+            {\pgfpoint{-0.1cm}{-\halfheight}}
+            {\pgfpoint{0.1cm}{\halfheight}}
+        \pgfusepath{fill}
+    }
+}
+
+% left action
+\pgfdeclareshape{actionL}{
+    % --- 変数の保存 ---
+    % ここで /tikz/fusion L の値を読み込み、シェイプ内部で使える長さに変換します
+    % \halfheight という名前で長さを保存します
+    \saveddimen{\halfheight}{
+        \pgfkeysgetvalue{/tikz/fusion L}{\len} % キーの値を取得
+        \pgfmathsetlength{\pgf@x}{\len}        % 長さに変換してpgf@xに入れる
+    }
+
+    % --- アンカー定義 ---
+    \anchor{center}{\pgfpointorigin}
+
+    % North (0, L)
+    \anchor{north}{\pgfpoint{0pt}{\halfheight}}
+
+    % South (0, -L)
+    \anchor{south}{\pgfpoint{0pt}{-\halfheight}}
+
+    % bin_up (in_upの内部側)
+    % ユーザの要望: 位置を 2L - 0.2cm とする
+    % (中心座標系では y = L - 0.2cm となります)
+    \anchor{bin up}{
+        \pgfpoint{-0.2cm}{\halfheight - 0.2cm}
+    }
+
+    % bin_down (対称の位置) y = - (L - 0.2cm)
+    \anchor{bin down}{
+        \pgfpoint{-0.2cm}{-\halfheight + 0.2cm}
+    }
+
+    % in_up (外部接続点)
+    % bin_up と同じ高さで、少し左(-0.5cm)に配置
+    \anchor{in up}{
+        \pgfpoint{-0.5cm}{\halfheight - 0.2cm}
+    }
+
+    \anchor{in down}{
+        \pgfpoint{-0.5cm}{-\halfheight + 0.2cm}
+    }
+
+    \anchor{out}{\pgfpoint{0.5cm}{0cm}}
+    \anchor{west_label}{\pgfpoint{-1.2cm}{0cm}}
+
+    % --- 描画 ---
+    \backgroundpath{
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{red}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{0.5cm}{0.0cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{0.0cm}}
+        \pgfusepath{stroke}
+
+        % 白線 (in_up -> bin_up)
+        % ※前回同様、視認性のため少し内側(0.0)まで伸ばしています
+        \pgfsetstrokecolor{black}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{-0.5cm}{\halfheight - 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{\halfheight - 0.2cm}}
+        \pgfusepath{stroke}
+
+        % 赤線 (in_down -> bin_down)
+        \pgfsetstrokecolor{red}
+        \pgfsetlinewidth{0.5pt}
+        \pgfpathmoveto{\pgfpoint{-0.5cm}{-\halfheight + 0.2cm}}
+        \pgfpathlineto{\pgfpoint{0.0cm}{-\halfheight + 0.2cm}}
+        \pgfusepath{stroke}
+
+        % \halfheight 変数を使って長方形を描く
+        % 左下: (-0.1, -L), 右上: (0.1, L)
+        \pgfsetfillcolor{red}
+        \pgfpathrectanglecorners
+            {\pgfpoint{-0.1cm}{-\halfheight}}
+            {\pgfpoint{0.1cm}{\halfheight}}
+        \pgfusepath{fill}
+    }
+}
+
+
+%%% MODULATION FOR MPO
+\pgfdeclareshape{modul mpo L}{
+    % 1. 基本サイズの設定 (調整しやすいように数値を変数化)
+    % 幅と高さを定義 (ここでは 幅2cm, 高さ2cm 程度を想定)
+    \saveddimen{\halfheight}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\halfwidth}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % リード線の長さ
+
+    % 2. アンカーの定義
+    \anchor{center}{\pgfpointorigin}
+
+    % 先端 (出力側)
+    \anchor{tip}{\pgfpoint{\halfwidth}{0cm}}
+
+    % 出力端子の先端 (out)
+    \anchor{out}{\pgfpoint{\halfwidth + \leadelen}{0cm}}
+
+    % 入力端子の先端 (in_up, in_down)
+    % 三角形の左辺(-halfwidth)からさらに左へ leadlen 分伸ばす
+    \anchor{in}{
+        \pgfpoint{-\halfwidth - \leadelen}{0cm}
+    }
+
+    % ラベル配置用のアンカー (線の根本付近)
+    \anchor{bin}{\pgfpoint{-\halfwidth}{0cm}}
+    \anchor{bout}{\pgfpoint{\halfwidth}{0cm}}
+
+    % 3. 描画パスの定義
+    \backgroundpath{
+        % --- 三角形本体 (塗りつぶし) ---
+        \pgfsetfillcolor{black} % デフォルトの色
+        \pgfpathmoveto{\pgfpoint{-\halfwidth}{\halfheight}}  % 左上
+        \pgfpathlineto{\pgfpoint{-\halfwidth}{-\halfheight}} % 左下
+        \pgfpathlineto{\pgfpoint{\halfwidth}{0cm}}           % 右先端
+        \pgfpathclose
+        \pgfusepath{fill} % 塗りつぶし実行
+
+        % --- リード線 (ストローク) ---
+        \pgfsetstrokecolor{black} % 線の色
+        \pgfsetlinewidth{0.5pt}
+
+        % 入力線 上
+        \pgfpathmoveto{\pgfpoint{-\halfwidth - \leadelen}{0cm}} % 外
+        \pgfpathlineto{\pgfpoint{-\halfwidth}{0cm}}             % 本体
+        \pgfusepath{stroke}
+
+        % 出力線
+        \pgfpathmoveto{\pgfpoint{\halfwidth}{0cm}}                % 本体先端
+        \pgfpathlineto{\pgfpoint{\halfwidth + \leadelen}{0cm}}    % 外
+        \pgfusepath{stroke}
+    }
+}
+
+\pgfdeclareshape{modul mpo R}{
+    % 1. 基本サイズの設定 (調整しやすいように数値を変数化)
+    % 幅と高さを定義 (ここでは 幅2cm, 高さ2cm 程度を想定)
+    \saveddimen{\halfheight}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\halfwidth}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % リード線の長さ
+
+    % 2. アンカーの定義
+    \anchor{center}{\pgfpointorigin}
+
+    % 先端 (出力側)
+    \anchor{tip}{\pgfpoint{-\halfwidth}{0cm}}
+
+    % 出力端子の先端 (out)
+    \anchor{out}{\pgfpoint{-\halfwidth - \leadelen}{0cm}}
+
+    % 入力端子の先端 (in_up, in_down)
+    % 三角形の左辺(-halfwidth)からさらに左へ leadlen 分伸ばす
+    \anchor{in}{
+        \pgfpoint{\halfwidth + \leadelen}{0cm}
+    }
+
+    % ラベル配置用のアンカー (線の根本付近)
+    \anchor{bin}{\pgfpoint{\halfwidth}{0cm}}
+    \anchor{bout}{\pgfpoint{-\halfwidth}{0cm}}
+
+    % 3. 描画パスの定義
+    \backgroundpath{
+        % --- 三角形本体 (塗りつぶし) ---
+        \pgfsetfillcolor{black} % デフォルトの色
+        \pgfpathmoveto{\pgfpoint{\halfwidth}{\halfheight}}  % 左上
+        \pgfpathlineto{\pgfpoint{\halfwidth}{-\halfheight}} % 左下
+        \pgfpathlineto{\pgfpoint{-\halfwidth}{0cm}}           % 左先端
+        \pgfpathclose
+        \pgfusepath{fill} % 塗りつぶし実行
+
+        % --- リード線 (ストローク) ---
+        \pgfsetstrokecolor{black} % 線の色
+        \pgfsetlinewidth{0.5pt}
+
+        % 入力線 上
+        \pgfpathmoveto{\pgfpoint{\halfwidth + \leadelen}{0cm}} % 外
+        \pgfpathlineto{\pgfpoint{\halfwidth}{0cm}}             % 本体
+        \pgfusepath{stroke}
+
+        % 出力線
+        \pgfpathmoveto{\pgfpoint{-\halfwidth}{0cm}}                % 本体先端
+        \pgfpathlineto{\pgfpoint{-\halfwidth - \leadelen}{0cm}}    % 外
+        \pgfusepath{stroke}
+    }
+}
+
+%%% MODULATION FOR MPS
+\pgfdeclareshape{modul mps L}{
+    % 1. 基本サイズの設定 (調整しやすいように数値を変数化)
+    % 幅と高さを定義 (ここでは 幅2cm, 高さ2cm 程度を想定)
+    \saveddimen{\halfheight}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\halfwidth}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % リード線の長さ
+
+    % 2. アンカーの定義
+    \anchor{center}{\pgfpointorigin}
+
+    % 先端 (出力側)
+    \anchor{tip}{\pgfpoint{\halfwidth}{0cm}}
+
+    % 出力端子の先端 (out)
+    \anchor{out}{\pgfpoint{\halfwidth + \leadelen}{0cm}}
+
+    % 入力端子の先端 (in_up, in_down)
+    % 三角形の左辺(-halfwidth)からさらに左へ leadlen 分伸ばす
+    \anchor{in}{
+        \pgfpoint{-\halfwidth - \leadelen}{0cm}
+    }
+
+    % ラベル配置用のアンカー (線の根本付近)
+    \anchor{bin}{\pgfpoint{-\halfwidth}{0cm}}
+    \anchor{bout}{\pgfpoint{\halfwidth}{0cm}}
+
+    % 3. 描画パスの定義
+    \backgroundpath{
+        % --- 三角形本体 (塗りつぶし) ---
+        \pgfsetfillcolor{red} % デフォルトの色
+        \pgfpathmoveto{\pgfpoint{-\halfwidth}{\halfheight}}  % 左上
+        \pgfpathlineto{\pgfpoint{-\halfwidth}{-\halfheight}} % 左下
+        \pgfpathlineto{\pgfpoint{\halfwidth}{0cm}}           % 右先端
+        \pgfpathclose
+        \pgfusepath{fill} % 塗りつぶし実行
+
+        % --- リード線 (ストローク) ---
+        \pgfsetstrokecolor{red} % 線の色
+        \pgfsetlinewidth{0.5pt}
+
+        % 入力線 上
+        \pgfpathmoveto{\pgfpoint{-\halfwidth - \leadelen}{0cm}} % 外
+        \pgfpathlineto{\pgfpoint{-\halfwidth}{0cm}}             % 本体
+        \pgfusepath{stroke}
+
+        % 出力線
+        \pgfpathmoveto{\pgfpoint{\halfwidth}{0cm}}                % 本体先端
+        \pgfpathlineto{\pgfpoint{\halfwidth + \leadelen}{0cm}}    % 外
+        \pgfusepath{stroke}
+    }
+}
+
+\pgfdeclareshape{modul mps R}{
+    % 1. 基本サイズの設定 (調整しやすいように数値を変数化)
+    % 幅と高さを定義 (ここでは 幅2cm, 高さ2cm 程度を想定)
+    \saveddimen{\halfheight}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\halfwidth}{\pgfmathsetlength\pgf@x{.125cm}}
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % リード線の長さ
+
+    % 2. アンカーの定義
+    \anchor{center}{\pgfpointorigin}
+
+    % 先端 (出力側)
+    \anchor{tip}{\pgfpoint{-\halfwidth}{0cm}}
+
+    % 出力端子の先端 (out)
+    \anchor{out}{\pgfpoint{-\halfwidth - \leadelen}{0cm}}
+
+    % 入力端子の先端 (in_up, in_down)
+    % 三角形の左辺(-halfwidth)からさらに左へ leadlen 分伸ばす
+    \anchor{in}{
+        \pgfpoint{\halfwidth + \leadelen}{0cm}
+    }
+
+    % ラベル配置用のアンカー (線の根本付近)
+    \anchor{bin}{\pgfpoint{\halfwidth}{0cm}}
+    \anchor{bout}{\pgfpoint{-\halfwidth}{0cm}}
+
+    % 3. 描画パスの定義
+    \backgroundpath{
+        % --- 三角形本体 (塗りつぶし) ---
+        \pgfsetfillcolor{red} % デフォルトの色
+        \pgfpathmoveto{\pgfpoint{\halfwidth}{\halfheight}}  % 左上
+        \pgfpathlineto{\pgfpoint{\halfwidth}{-\halfheight}} % 左下
+        \pgfpathlineto{\pgfpoint{-\halfwidth}{0cm}}           % 左先端
+        \pgfpathclose
+        \pgfusepath{fill} % 塗りつぶし実行
+
+        % --- リード線 (ストローク) ---
+        \pgfsetstrokecolor{red} % 線の色
+        \pgfsetlinewidth{0.5pt}
+
+        % 入力線 上
+        \pgfpathmoveto{\pgfpoint{\halfwidth + \leadelen}{0cm}} % 外
+        \pgfpathlineto{\pgfpoint{\halfwidth}{0cm}}             % 本体
+        \pgfusepath{stroke}
+
+        % 出力線
+        \pgfpathmoveto{\pgfpoint{-\halfwidth}{0cm}}                % 本体先端
+        \pgfpathlineto{\pgfpoint{-\halfwidth - \leadelen}{0cm}}    % 外
+        \pgfusepath{stroke}
+    }
+}
+\makeatother
+
+
+
+\newcommand{\MPO}[2]{%
+    % #1:位置, #2:名前
+    \node[mpo] (#2) at (#1) {};
+}
+\newcommand{\MPS}[2]{
+    \node[mps] (#2) at (#1) {};
+}
+\newcommand{\FusionR}[2]{%
+    % #1:長さL(オプション, デフォルト0.7cm), #2:位置, #3:名前
+
+    % キー fusion L に #1 を渡す
+    \node[fusionR, fusion L=0.7cm] (#2) at (#1) {};
+    % ラベル配置
+}
+\newcommand{\FusionL}[2]{%
+    % #1:長さL(オプション, デフォルト0.7cm), #2:位置, #3:名前
+    \node[fusionL, fusion L=0.7cm] (#2) at (#1) {};
+}
+\newcommand{\ActionR}[2]{%
+    \node[actionR, fusion L=0.7cm] (#2) at (#1) {};
+}
+\newcommand{\ActionL}[2]{%
+    \node[actionL, fusion L=0.7cm] (#2) at (#1) {};
+}
+\newcommand{\ModulMPOL}[2]{%
+    % #1:位置, #2:名前
+    \node[modul mpo L] (#2) at (#1) {};
+}
+\newcommand{\ModulMPOR}[2]{%
+    % #1:位置, #2:名前
+    \node[modul mpo R] (#2) at (#1) {};
+}
+\newcommand{\ModulMPSL}[2]{%
+    % #1:位置, #2:名前
+    \node[modul mps L] (#2) at (#1) {};
+}
+\newcommand{\ModulMPSR}[2]{%
+    % #1:位置, #2:名前
+    \node[modul mps R] (#2) at (#1) {};
+}
+
