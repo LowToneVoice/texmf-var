@@ -121,6 +121,72 @@
 }
 
 
+% physical operator (filled circle with vertical lines)
+\pgfdeclareshape{physicaloperator}{
+    \saveddimen{\radius}{\pgfmathsetlength\pgf@x{0.125cm}} % 円の半径
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % 足の長さ
+
+    % アンカー定義
+    \anchor{center}{\pgfpointorigin}
+    \anchor{north}{\pgfpoint{0cm}{\radius + \leadelen}}
+    \anchor{south}{\pgfpoint{0cm}{-\radius - \leadelen}}
+
+    % 描画パス
+    \backgroundpath{
+        % 2. 足の描画 (白線/黒線)
+        % ここでは背景が白と仮定して黒線で描画しますが、
+        % もし「黒い円の中に食い込む白線」が必要なら strokecolor{white} に変更してください。
+        % 今回は「円の外に伸びる黒い足」として実装します。
+        \pgfsetlinewidth{0.5pt}
+
+        % --- 入力足 (上下) ---
+        \pgfsetstrokecolor{black}
+        \pgfpathmoveto{\pgfpoint{0cm}{-\radius - \leadelen}}
+        \pgfpathlineto{\pgfpoint{0cm}{\radius + \leadelen}}
+        \pgfusepath{stroke}
+
+        % 黒い円 (塗りつぶし)
+        \pgfsetfillcolor{black}
+        \pgfpathcircle{\pgfpointorigin}{\radius}
+        \pgfusepath{fill}
+    }
+}
+
+% virtual operator (filled red circle with horizontal lines)
+\pgfdeclareshape{virtualoperator}{
+    \saveddimen{\radius}{\pgfmathsetlength\pgf@x{0.125cm}} % 円の半径
+    \saveddimen{\leadelen}{\pgfmathsetlength\pgf@x{0.25cm}} % 足の長さ
+
+    % アンカー定義
+    \anchor{center}{\pgfpointorigin}
+    \anchor{east}{\pgfpoint{0cm}{\radius + \leadelen}}
+    \anchor{west}{\pgfpoint{0cm}{-\radius - \leadelen}}
+    \anchor{right}{\pgfpoint{0cm}{\radius + \leadelen}}
+    \anchor{left}{\pgfpoint{0cm}{-\radius - \leadelen}}
+
+    % 描画パス
+    \backgroundpath{
+        % 2. 足の描画 (白線/黒線)
+        % ここでは背景が白と仮定して黒線で描画しますが、
+        % もし「黒い円の中に食い込む白線」が必要なら strokecolor{white} に変更してください。
+        % 今回は「円の外に伸びる黒い足」として実装します。
+        \pgfsetstrokecolor{red}
+        \pgfsetlinewidth{0.5pt}
+
+
+        % --- 入力足 (左右) ---
+        \pgfpathmoveto{\pgfpoint{-\radius - \leadelen}{0cm}}
+        \pgfpathlineto{\pgfpoint{\radius + \leadelen}{0cm}}
+        \pgfusepath{stroke}
+
+        % 黒い円 (塗りつぶし)
+        \pgfsetfillcolor{red}
+        \pgfpathcircle{\pgfpointorigin}{\radius}
+        \pgfusepath{fill}
+    }
+}
+
+
 % right fusion
 \pgfdeclareshape{fusionR}{
     % --- 変数の保存 ---
@@ -655,6 +721,14 @@
 \newcommand{\MPS}[2]{
     \node[mps] (#2) at (#1) {};
 }
+\newcommand{\physop}[2]{%
+    % #1:位置, #2:名前
+    \node[physicaloperator] (#2) at (#1) {};
+}
+\newcommand{\virtop}[2]{%
+    % #1:位置, #2:名前
+    \node[virtualoperator] (#2) at (#1) {};
+}
 \newcommand{\FusionR}[2]{%
     % #1:長さL(オプション, デフォルト0.7cm), #2:位置, #3:名前
 
@@ -688,4 +762,3 @@
     % #1:位置, #2:名前
     \node[modul mps R] (#2) at (#1) {};
 }
-
